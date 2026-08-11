@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { getDB } from "../../database/connection.js";
 import { COLLECTIONS } from "../../constants/collections.js";
+import { normalizeEmail } from "../../utils/normalize-email.js";
 
 //Registro de usuario
 export async function register(data) {
@@ -18,7 +19,7 @@ export async function register(data) {
 
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
     const usersCollection = getDB().collection(COLLECTIONS.USERS);
 
     const existingUser = await usersCollection.findOne({
@@ -80,8 +81,7 @@ export async function login(data) {
 
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-
+    const normalizedEmail = normalizeEmail(email);
     const usersCollection = getDB().collection(COLLECTIONS.USERS);
 
     const user = await usersCollection.findOne({

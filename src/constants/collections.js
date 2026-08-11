@@ -2,7 +2,7 @@ export const COLLECTIONS = {
 
     USERS: "users",
 
-    DOCUMENTS: "documents",
+    KNOWLEDGE: "knowledge",
 
     FAQS: "faqs",
 
