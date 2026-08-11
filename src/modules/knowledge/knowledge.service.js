@@ -63,3 +63,21 @@ export async function createKnowledge(userId, data) {
     };
 
 }
+
+export async function getKnowledge(userId) {
+
+    const knowledgeCollection = getDB().collection(
+        COLLECTIONS.KNOWLEDGE
+    );
+
+    const knowledgeSources = await knowledgeCollection
+        .find({
+            userId: new ObjectId(userId)
+        })
+        .sort({
+            createdAt: -1
+        })
+        .toArray();
+
+    return knowledgeSources;
+}
