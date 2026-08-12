@@ -1,4 +1,10 @@
-import { createKnowledge, getKnowledge, getKnowledgeById, updateKnowledge } from "./knowledge.service.js";
+import { 
+    createKnowledge, 
+    getKnowledge, 
+    getKnowledgeById, 
+    updateKnowledge, 
+    deleteKnowledge 
+} from "./knowledge.service.js";
 
 export async function createKnowledgeSource(req, res) {
 
@@ -106,6 +112,37 @@ export async function updateKnowledgeSource(req, res) {
             message: "Fuente de conocimiento actualizada correctamente.",
 
             data: knowledgeSource
+
+        });
+
+    } catch (error) {
+
+        return res.status(error.statusCode || 500).json({
+
+            success: false,
+
+            message: error.message
+
+        });
+
+    }
+
+}
+
+export async function deleteKnowledgeSource(req, res) {
+
+    try {
+
+        await deleteKnowledge(
+            req.user.id,
+            req.params.id
+        );
+
+        return res.status(200).json({
+
+            success: true,
+
+            message: "Fuente de conocimiento eliminada correctamente."
 
         });
 

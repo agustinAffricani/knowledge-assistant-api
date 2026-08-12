@@ -225,3 +225,39 @@ export async function updateKnowledge(userId, knowledgeId, data) {
 
     return result;
 }
+
+export async function deleteKnowledge(userId, knowledgeId) {
+
+    if (!ObjectId.isValid(knowledgeId)) {
+
+        const error = new Error(
+            "El ID de la fuente de conocimiento no es válido."
+        );
+
+        error.statusCode = 400;
+        throw error;
+
+    }
+
+    const knowledgeCollection = getDB().collection(
+        COLLECTIONS.KNOWLEDGE
+    );
+
+    const result = await knowledgeCollection.deleteOne({
+        _id: new ObjectId(knowledgeId),
+        userId: new ObjectId(userId)
+    });
+
+    if (result.deletedCount === 0) {
+
+        const error = new Error(
+            "Fuente de conocimiento no encontrada."
+        );
+
+        error.statusCode = 404;
+        throw error;
+
+    }
+
+    return true;
+}
