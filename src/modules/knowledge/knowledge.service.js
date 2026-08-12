@@ -111,3 +111,117 @@ export async function getKnowledgeById(userId, knowledgeId) {
 
     return knowledgeSource;
 }
+
+export async function updateKnowledge(userId, knowledgeId, data) {
+
+    if (!ObjectId.isValid(knowledgeId)) {
+
+        const error = new Error(
+            "El ID de la fuente de conocimiento no es válido."
+        );
+
+        error.statusCode = 400;
+        throw error;
+
+    }
+
+    const { title, description, isActive } = data;
+
+    if (
+        title === undefined &&
+        description === undefined &&
+        isActive === undefined
+    ) {
+
+        const error = new Error(
+            "No se proporcionaron datos para actualizar."
+        );
+
+        error.statusCode = 400;
+        throw error;
+
+    }
+
+    const updates = {};
+
+    if (title !== undefined) {
+
+    if (typeof title !== "string" || !title.trim()) {
+
+        const error = new Error(
+            "El título no puede estar vacío."
+        );
+
+        error.statusCode = 400;
+        throw error;
+    }
+
+        updates.title = title.trim();
+    }
+
+    if (description !== undefined) {
+
+    if (typeof description !== "string") {
+
+        const error = new Error(
+            "La descripción debe ser un texto."
+        );
+
+        error.statusCode = 400;
+        throw error;
+
+    }
+
+        updates.description = description.trim();
+
+    }
+
+    if (isActive !== undefined) {
+
+        if (typeof isActive !== "boolean") {
+
+            const error = new Error(
+                "El campo isActive debe ser booleano."
+            );
+
+            error.statusCode = 400;
+            throw error;
+
+        }
+
+        updates.isActive = isActive;
+
+    }
+
+    updates.updatedAt = new Date();
+
+    const knowledgeCollection = getDB().collection(
+        COLLECTIONS.KNOWLEDGE
+    );
+
+    const result = await knowledgeCollection.findOneAndUpdate(
+        {
+            _id: new ObjectId(knowledgeId),
+            userId: new ObjectId(userId)
+        },
+        {
+            $set: updates
+        },
+        {
+            returnDocument: "after"
+        }
+    );
+
+    if (!result) {
+
+        const error = new Error(
+            "Fuente de conocimiento no encontrada."
+        );
+
+        error.statusCode = 404;
+        throw error;
+
+    }
+
+    return result;
+}
