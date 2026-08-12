@@ -1,4 +1,4 @@
-import { createKnowledge, getKnowledge } from "./knowledge.service.js";
+import { createKnowledge, getKnowledge, getKnowledgeById } from "./knowledge.service.js";
 
 export async function createKnowledgeSource(req, res) {
 
@@ -41,6 +41,37 @@ export async function getKnowledgeSources(req, res) {
             success: true,
 
             data: knowledgeSources
+
+        });
+
+    } catch (error) {
+
+        return res.status(error.statusCode || 500).json({
+
+            success: false,
+
+            message: error.message
+
+        });
+
+    }
+
+}
+
+export async function getKnowledgeSource(req, res) {
+
+    try {
+
+        const knowledgeSource = await getKnowledgeById(
+            req.user.id,
+            req.params.id
+        );
+
+        return res.status(200).json({
+
+            success: true,
+
+            data: knowledgeSource
 
         });
 

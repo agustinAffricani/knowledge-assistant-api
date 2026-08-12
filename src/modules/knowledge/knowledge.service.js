@@ -81,3 +81,33 @@ export async function getKnowledge(userId) {
 
     return knowledgeSources;
 }
+
+export async function getKnowledgeById(userId, knowledgeId) {
+
+    if (!ObjectId.isValid(knowledgeId)) {
+
+        const error = new Error("El ID de la fuente de conocimiento no es válido.");
+        error.statusCode = 400;
+        throw error;
+
+    }
+
+    const knowledgeCollection = getDB().collection(
+        COLLECTIONS.KNOWLEDGE
+    );
+
+    const knowledgeSource = await knowledgeCollection.findOne({
+        _id: new ObjectId(knowledgeId),
+        userId: new ObjectId(userId)
+    });
+
+    if (!knowledgeSource) {
+
+        const error = new Error("Fuente de conocimiento no encontrada.");
+        error.statusCode = 404;
+        throw error;
+
+    }
+
+    return knowledgeSource;
+}
