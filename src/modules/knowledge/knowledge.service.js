@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { getDB } from "../../database/connection.js";
 import { COLLECTIONS } from "../../constants/collections.js";
+import { processKnowledgeContent } from "./knowledge.processor.js";
 
 import {
     KNOWLEDGE_STATUS,
@@ -260,4 +261,83 @@ export async function deleteKnowledge(userId, knowledgeId) {
     }
 
     return true;
+}
+
+// Actualiza el contenido de una fuente de conocimiento.
+export async function updateKnowledgeContent(userId, knowledgeId, content) {
+
+    if (!ObjectId.isValid(knowledgeId)) {
+
+        const error = new Error(
+            "El ID de la fuente de conocimiento no es válido."
+        );
+
+        error.statusCode = 400;
+        throw error;
+
+    }
+
+    if (typeof content !== "string" || !content.trim()) {
+
+        const error = new Error(
+            "El contenido es obligatorio y no puede estar vacío."
+        );
+
+        error.statusCode = 400;
+        throw error;
+
+    }
+
+    const knowledgeCollection = getDB().collection(
+        COLLECTIONS.KNOWLEDGE
+    );
+
+    const knowledgeSource = await knowledgeCollection.findOne({
+        _id: new ObjectId(knowledgeId),
+        userId: new ObjectId(userId)
+    });
+
+    if (!knowledgeSource) {
+
+        const error = new Error(
+            "Fuente de conocimiento no encontrada."
+        );
+
+        error.statusCode = 404;
+        throw error;
+
+    }
+
+    if (knowledgeSource.type !== KNOWLEDGE_TYPES.TEXT) {
+
+        const error = new Error(
+            "Solo las fuentes de tipo texto pueden recibir contenido de esta forma."
+        );
+
+        error.statusCode = 400;
+        throw error;
+
+    }
+
+    const processedContent = processKnowledgeContent(content);
+
+    const result = await knowledgeCollection.findOneAndUpdate(
+        {
+            _id: new ObjectId(knowledgeId),
+            userId: new ObjectId(userId)
+        },
+        {
+            $set: {
+                "source.content": content.trim(),
+                processedContent,
+                status: "ready",
+                updatedAt: new Date()
+            }
+        },
+        {
+            returnDocument: "after"
+        }
+    );
+
+    return result;
 }

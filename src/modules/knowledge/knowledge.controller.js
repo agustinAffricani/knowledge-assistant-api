@@ -3,7 +3,8 @@ import {
     getKnowledge, 
     getKnowledgeById, 
     updateKnowledge, 
-    deleteKnowledge 
+    deleteKnowledge,
+    updateKnowledgeContent
 } from "./knowledge.service.js";
 
 export async function createKnowledgeSource(req, res) {
@@ -143,6 +144,41 @@ export async function deleteKnowledgeSource(req, res) {
             success: true,
 
             message: "Fuente de conocimiento eliminada correctamente."
+
+        });
+
+    } catch (error) {
+
+        return res.status(error.statusCode || 500).json({
+
+            success: false,
+
+            message: error.message
+
+        });
+
+    }
+
+}
+
+// Actualiza el contenido de una fuente de conocimiento.
+export async function updateKnowledgeContentSource(req, res) {
+
+    try {
+
+        const knowledgeSource = await updateKnowledgeContent(
+            req.user.id,
+            req.params.id,
+            req.body.content
+        );
+
+        return res.status(200).json({
+
+            success: true,
+
+            message: "Contenido de la fuente actualizado correctamente.",
+
+            data: knowledgeSource
 
         });
 
