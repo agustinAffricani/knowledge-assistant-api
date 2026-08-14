@@ -1,5 +1,4 @@
 import { ObjectId } from "mongodb";
-
 import { getDB } from "../../database/connection.js";
 import { COLLECTIONS } from "../../constants/collections.js";
 import { processKnowledgeContent } from "./knowledge.processor.js";

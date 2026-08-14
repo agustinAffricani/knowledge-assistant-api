@@ -6,6 +6,8 @@ export const COLLECTIONS = {
 
     FAQS: "faqs",
 
-    CONVERSATIONS: "conversations"
+    CONVERSATIONS: "conversations",
+
+    CHATBOTS: "chatbots"    
 
 };
