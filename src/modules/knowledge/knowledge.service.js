@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import { getDB } from "../../database/connection.js";
 import { COLLECTIONS } from "../../constants/collections.js";
 import { processKnowledgeContent } from "./knowledge.processor.js";
+import { generateEmbedding } from "../ai/ai.service.js";
 
 import {
     KNOWLEDGE_STATUS,
@@ -319,6 +320,7 @@ export async function updateKnowledgeContent(userId, knowledgeId, content) {
     }
 
     const processedContent = processKnowledgeContent(content);
+    const embedding = await generateEmbedding(processedContent);
 
     const result = await knowledgeCollection.findOneAndUpdate(
         {
@@ -329,6 +331,7 @@ export async function updateKnowledgeContent(userId, knowledgeId, content) {
             $set: {
                 "source.content": content.trim(),
                 processedContent,
+                embedding,
                 status: "ready",
                 updatedAt: new Date()
             }

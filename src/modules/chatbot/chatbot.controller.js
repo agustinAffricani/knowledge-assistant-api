@@ -6,6 +6,10 @@ import {
     deleteChatbot
 } from "./chatbot.service.js";
 
+import {
+    processChatMessage
+} from "./chat.service.js";
+
 // Crea un nuevo chatbot para el usuario autenticado.
 export async function createChatbotSource(req, res) {
 
@@ -153,6 +157,38 @@ export async function deleteChatbotSource(req, res) {
             success: true,
 
             message: "Chatbot eliminado correctamente."
+
+        });
+
+    } catch (error) {
+
+        return res.status(error.statusCode || 500).json({
+
+            success: false,
+
+            message: error.message
+
+        });
+
+    }
+
+}
+
+// Procesa una consulta realizada por un visitante al chatbot.
+export async function processChatMessageSource(req, res) {
+
+    try {
+
+        const result = await processChatMessage(
+            req.params.id,
+            req.body.message
+        );
+
+        return res.status(200).json({
+
+            success: true,
+
+            data: result
 
         });
 

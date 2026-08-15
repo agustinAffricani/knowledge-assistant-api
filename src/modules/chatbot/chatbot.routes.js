@@ -7,7 +7,8 @@ import {
     updateChatbotSource, 
     getChatbotsSource,
     getChatbotByIdSource,
-    deleteChatbotSource
+    deleteChatbotSource,
+    processChatMessageSource
 } from "./chatbot.controller.js";
 
 const router = express.Router();
@@ -17,5 +18,6 @@ router.patch("/:id", verifyToken, updateChatbotSource);
 router.get("/", verifyToken, getChatbotsSource);
 router.get("/:id", verifyToken, getChatbotByIdSource);
 router.delete("/:id", verifyToken, deleteChatbotSource);
+router.post("/:id/chat", processChatMessageSource);
 
 export default router;
