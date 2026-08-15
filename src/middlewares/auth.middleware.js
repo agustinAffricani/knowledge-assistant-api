@@ -2,9 +2,18 @@ import jwt from "jsonwebtoken";
 
 export function verifyToken(req, res, next) {
 
+    const tokenFromCookie = req.cookies.authToken;
+
     const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
+    const tokenFromHeader =
+        authHeader && authHeader.startsWith("Bearer ")
+            ? authHeader.split(" ")[1]
+            : null;
+
+    const token = tokenFromCookie || tokenFromHeader;
+
+    if (!token) {
 
         return res.status(401).json({
 
@@ -15,20 +24,6 @@ export function verifyToken(req, res, next) {
         });
 
     }
-
-    if (!authHeader.startsWith("Bearer ")) {
-
-        return res.status(401).json({
-
-            success: false,
-
-            message: "Formato de token inválido."
-
-        });
-
-    }
-
-    const token = authHeader.split(" ")[1];
 
     try {
 
