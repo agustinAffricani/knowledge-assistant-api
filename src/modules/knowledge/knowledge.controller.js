@@ -166,10 +166,14 @@ export async function updateKnowledgeContentSource(req, res) {
 
     try {
 
+       // console.log("req.file:", req.file);
+        // console.log("req.body:", req.body);
+
         const knowledgeSource = await updateKnowledgeContent(
             req.user.id,
             req.params.id,
-            req.body.content
+            req.body?.content,
+            req.file
         );
 
         return res.status(200).json({

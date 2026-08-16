@@ -1,7 +1,7 @@
 import express from "express";
 
 import { verifyToken } from "../../middlewares/auth.middleware.js";
-
+import { uploadKnowledgeFile } from "../../middlewares/upload.middleware.js";
 import { 
     createKnowledgeSource, 
     getKnowledgeSources, 
@@ -17,7 +17,8 @@ router.post("/", verifyToken, createKnowledgeSource);
 router.get("/", verifyToken, getKnowledgeSources);
 router.get("/:id", verifyToken, getKnowledgeSource);
 router.patch("/:id", verifyToken, updateKnowledgeSource);
-router.patch("/:id/content", verifyToken, updateKnowledgeContentSource);
+router.patch("/:id/content", verifyToken, uploadKnowledgeFile, updateKnowledgeContentSource);
+
 router.delete("/:id", verifyToken, deleteKnowledgeSource);
 
 export default router;

@@ -3,6 +3,7 @@ import { getDB } from "../../database/connection.js";
 import { COLLECTIONS } from "../../constants/collections.js";
 import { processKnowledgeContent } from "./knowledge.processor.js";
 import { generateEmbedding } from "../ai/ai.service.js";
+import { extractPdfText, deletePdfFile } from "../../utils/pdf.js";
 
 import {
     KNOWLEDGE_STATUS,
@@ -264,23 +265,12 @@ export async function deleteKnowledge(userId, knowledgeId) {
 }
 
 // Actualiza el contenido de una fuente de conocimiento.
-export async function updateKnowledgeContent(userId, knowledgeId, content) {
+export async function updateKnowledgeContent( userId, knowledgeId, content, file ) {
 
     if (!ObjectId.isValid(knowledgeId)) {
 
         const error = new Error(
             "El ID de la fuente de conocimiento no es válido."
-        );
-
-        error.statusCode = 400;
-        throw error;
-
-    }
-
-    if (typeof content !== "string" || !content.trim()) {
-
-        const error = new Error(
-            "El contenido es obligatorio y no puede estar vacío."
         );
 
         error.statusCode = 400;
@@ -308,38 +298,141 @@ export async function updateKnowledgeContent(userId, knowledgeId, content) {
 
     }
 
-    if (knowledgeSource.type !== KNOWLEDGE_TYPES.TEXT) {
+    const updates = {};
 
-        const error = new Error(
-            "Solo las fuentes de tipo texto pueden recibir contenido de esta forma."
+    let previousFilePath = null;
+    let newFilePath = null;
+
+    if (knowledgeSource.type === KNOWLEDGE_TYPES.TEXT) {
+
+        if (typeof content !== "string" || !content.trim()) {
+
+            const error = new Error(
+                "El contenido es obligatorio y no puede estar vacío."
+            );
+
+            error.statusCode = 400;
+            throw error;
+
+        }
+
+        const processedContent = processKnowledgeContent(
+            content
         );
 
-        error.statusCode = 400;
+        const embedding = await generateEmbedding(
+            processedContent
+        );
+
+        updates["source.content"] = content.trim();
+        updates.processedContent = processedContent;
+        updates.embedding = embedding;
+        updates.status = "ready";
+
+    }
+
+    if (knowledgeSource.type === KNOWLEDGE_TYPES.PDF) {
+
+        if (!file) {
+
+            const error = new Error(
+                "El archivo PDF es obligatorio."
+            );
+
+            error.statusCode = 400;
+            throw error;
+
+        }
+
+        previousFilePath = knowledgeSource.source?.path;
+        newFilePath = file.path;
+
+        try {
+
+            const extractedText = await extractPdfText(
+                file.path
+            );
+
+            const processedContent = processKnowledgeContent(
+                extractedText
+            );
+
+            const embedding = await generateEmbedding(
+                processedContent
+            );
+
+            updates.source = {
+                filename: file.originalname,
+                path: file.path
+            };
+
+            updates.processedContent = processedContent;
+            updates.embedding = embedding;
+            updates.status = "ready";
+
+        } catch (error) {
+
+            await deletePdfFile(file.path);
+
+            throw error;
+
+        }
+
+    }
+
+    updates.updatedAt = new Date();
+
+    try {
+
+        const result = await knowledgeCollection.findOneAndUpdate(
+            {
+                _id: new ObjectId(knowledgeId),
+                userId: new ObjectId(userId)
+            },
+            {
+                $set: updates
+            },
+            {
+                returnDocument: "after"
+            }
+        );
+
+        if (
+            knowledgeSource.type === KNOWLEDGE_TYPES.PDF &&
+            previousFilePath &&
+            newFilePath
+        ) {
+
+            try {
+
+                await deletePdfFile(previousFilePath);
+
+            } catch (error) {
+
+                console.error(
+                    "No fue posible eliminar el PDF anterior:",
+                    error
+                );
+
+            }
+
+        }
+
+        return result;
+
+    } catch (error) {
+
+        if (
+            knowledgeSource.type === KNOWLEDGE_TYPES.PDF &&
+            newFilePath
+        ) {
+
+            await deletePdfFile(newFilePath);
+
+        }
+
         throw error;
 
     }
 
-    const processedContent = processKnowledgeContent(content);
-    const embedding = await generateEmbedding(processedContent);
-
-    const result = await knowledgeCollection.findOneAndUpdate(
-        {
-            _id: new ObjectId(knowledgeId),
-            userId: new ObjectId(userId)
-        },
-        {
-            $set: {
-                "source.content": content.trim(),
-                processedContent,
-                embedding,
-                status: "ready",
-                updatedAt: new Date()
-            }
-        },
-        {
-            returnDocument: "after"
-        }
-    );
-
-    return result;
 }
