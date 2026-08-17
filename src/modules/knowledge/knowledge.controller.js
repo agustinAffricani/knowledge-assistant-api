@@ -7,6 +7,7 @@ import {
     updateKnowledgeContent
 } from "./knowledge.service.js";
 
+// Crea una nueva fuente de conocimiento para el usuario.
 export async function createKnowledgeSource(req, res) {
 
     try {
@@ -37,6 +38,7 @@ export async function createKnowledgeSource(req, res) {
 
 }
 
+// Obtiene todas las fuentes de conocimiento del usuario.
 export async function getKnowledgeSources(req, res) {
 
     try {
@@ -65,6 +67,7 @@ export async function getKnowledgeSources(req, res) {
 
 }
 
+// Obtiene una fuente de conocimiento específica por su ID.
 export async function getKnowledgeSource(req, res) {
 
     try {
@@ -96,6 +99,7 @@ export async function getKnowledgeSource(req, res) {
 
 }
 
+// Actualiza los datos principales de una fuente de conocimiento 
 export async function updateKnowledgeSource(req, res) {
 
     try {
@@ -130,6 +134,7 @@ export async function updateKnowledgeSource(req, res) {
 
 }
 
+// Elimina una fuente de conocimiento.
 export async function deleteKnowledgeSource(req, res) {
 
     try {
@@ -173,7 +178,8 @@ export async function updateKnowledgeContentSource(req, res) {
             req.user.id,
             req.params.id,
             req.body?.content,
-            req.file
+            req.file,
+            req.body?.url
         );
 
         return res.status(200).json({

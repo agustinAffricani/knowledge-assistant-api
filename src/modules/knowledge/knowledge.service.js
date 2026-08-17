@@ -4,6 +4,7 @@ import { COLLECTIONS } from "../../constants/collections.js";
 import { processKnowledgeContent } from "./knowledge.processor.js";
 import { generateEmbedding } from "../ai/ai.service.js";
 import { extractPdfText, deletePdfFile } from "../../utils/pdf.js";
+import { extractUrlText } from "../../utils/url.js";
 
 import {
     KNOWLEDGE_STATUS,
@@ -265,7 +266,7 @@ export async function deleteKnowledge(userId, knowledgeId) {
 }
 
 // Actualiza el contenido de una fuente de conocimiento.
-export async function updateKnowledgeContent( userId, knowledgeId, content, file ) {
+export async function updateKnowledgeContent( userId, knowledgeId, content, file, url ) {
 
     if (!ObjectId.isValid(knowledgeId)) {
 
@@ -303,6 +304,7 @@ export async function updateKnowledgeContent( userId, knowledgeId, content, file
     let previousFilePath = null;
     let newFilePath = null;
 
+    // Manejo de la actualización de contenido para fuentes de conocimiento de tipo texto
     if (knowledgeSource.type === KNOWLEDGE_TYPES.TEXT) {
 
         if (typeof content !== "string" || !content.trim()) {
@@ -331,6 +333,7 @@ export async function updateKnowledgeContent( userId, knowledgeId, content, file
 
     }
 
+    // Manejo de la actualización de contenido para fuentes de conocimiento de tipo PDF
     if (knowledgeSource.type === KNOWLEDGE_TYPES.PDF) {
 
         if (!file) {
@@ -377,6 +380,42 @@ export async function updateKnowledgeContent( userId, knowledgeId, content, file
             throw error;
 
         }
+
+    }
+
+    // Manejo de la actualización de contenido para fuentes de conocimiento de tipo URL
+    if (knowledgeSource.type === KNOWLEDGE_TYPES.URL) {
+
+        if (typeof url !== "string" || !url.trim()) {
+
+            const error = new Error(
+                "La URL es obligatoria."
+            );
+
+            error.statusCode = 400;
+            throw error;
+
+        }
+
+        const extractedText = await extractUrlText(
+            url.trim()
+        );
+
+        const processedContent = processKnowledgeContent(
+            extractedText
+        );
+
+        const embedding = await generateEmbedding(
+            processedContent
+        );
+
+        updates.source = {
+            url: url.trim()
+        };
+
+        updates.processedContent = processedContent;
+        updates.embedding = embedding;
+        updates.status = "ready";
 
     }
 
