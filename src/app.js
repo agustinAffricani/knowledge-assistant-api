@@ -6,6 +6,7 @@ import healthRoutes from "./modules/health/health.routes.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import knowledgeRoutes from "./modules/knowledge/knowledge.routes.js";
 import chatbotRoutes from "./modules/chatbot/chatbot.routes.js";
+import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
 
@@ -17,5 +18,7 @@ app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/knowledge", knowledgeRoutes);
 app.use("/api/chatbots", chatbotRoutes);
+
+app.use(errorHandler);
 
 export default app;
