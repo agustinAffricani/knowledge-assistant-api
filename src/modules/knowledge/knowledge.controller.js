@@ -179,7 +179,9 @@ export async function updateKnowledgeContentSource(req, res) {
             req.params.id,
             req.body?.content,
             req.file,
-            req.body?.url
+            req.body?.url,
+            req.body?.question,
+            req.body?.answer
         );
 
         return res.status(200).json({

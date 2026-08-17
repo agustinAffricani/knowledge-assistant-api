@@ -266,7 +266,7 @@ export async function deleteKnowledge(userId, knowledgeId) {
 }
 
 // Actualiza el contenido de una fuente de conocimiento.
-export async function updateKnowledgeContent( userId, knowledgeId, content, file, url ) {
+export async function updateKnowledgeContent( userId, knowledgeId, content, file, url, question, answer ) {
 
     if (!ObjectId.isValid(knowledgeId)) {
 
@@ -411,6 +411,56 @@ export async function updateKnowledgeContent( userId, knowledgeId, content, file
 
         updates.source = {
             url: url.trim()
+        };
+
+        updates.processedContent = processedContent;
+        updates.embedding = embedding;
+        updates.status = "ready";
+
+    }
+
+    // Manejo de la actualización de contenido para fuentes de conocimiento de tipo FAQ
+    if (knowledgeSource.type === KNOWLEDGE_TYPES.FAQ) {
+
+        if (
+            typeof question !== "string" ||
+            !question.trim()
+        ) {
+
+            const error = new Error(
+                "La pregunta es obligatoria."
+            );
+
+            error.statusCode = 400;
+            throw error;
+
+        }
+
+        if (
+            typeof answer !== "string" ||
+            !answer.trim()
+        ) {
+
+            const error = new Error(
+                "La respuesta es obligatoria."
+            );
+
+            error.statusCode = 400;
+            throw error;
+
+        }
+
+        const processedContent = processKnowledgeContent(
+            `Pregunta: ${question.trim()}\nRespuesta: ${answer.trim()}`
+        );
+
+        const embedding = await generateEmbedding(
+            processedContent
+        );
+
+        updates.source = {
+            question: question.trim(),
+            answer: answer.trim()
         };
 
         updates.processedContent = processedContent;
