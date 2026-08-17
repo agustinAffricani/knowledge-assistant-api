@@ -4,8 +4,13 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
-// Genera una respuesta utilizando una pregunta y el contexto proporcionado.
-export async function generateAnswer(question, context) {
+// Genera una respuesta utilizando una pregunta, contexto e historial.
+export async function generateAnswer(
+    question,
+    context,
+    history = []
+) {
+
     if (!question || !question.trim()) {
         const error = new Error(
             "La pregunta es obligatoria."
@@ -13,34 +18,64 @@ export async function generateAnswer(question, context) {
         error.statusCode = 400;
         throw error;
     }
+
     if (!context || context.length === 0) {
         const error = new Error(
             "No hay información suficiente para responder la consulta."
         );
+
         error.statusCode = 400;
         throw error;
     }
+
     const contextText = context
         .map(item => `${item.title}: ${item.content}`)
         .join("\n\n");
+
     const systemPrompt = `
 Sos un asistente virtual de una empresa.
-Tu tarea es responder las consultas de los usuarios utilizando
-EXCLUSIVAMENTE la información proporcionada en el contexto.
+
+Tu tarea es responder utilizando exclusivamente la información disponible en el contexto proporcionado.
+
 No inventes información ni utilices conocimientos externos al contexto.
-Si la información necesaria para responder no está presente en el contexto,
-indica que no encontraste información suficiente para responder.
+
+Utilizá el historial de conversación para comprender referencias, preguntas de seguimiento y el contexto de la conversación.
+
+Respondé de manera natural, cordial y clara.
+
+Comportamiento conversacional:
+- Si el usuario saluda al comenzar la conversación, respondé al saludo de manera cordial.
+- Si el usuario realiza directamente una consulta sin saludar, respondé directamente a la consulta.
+- No repitas saludos innecesariamente durante una conversación.
+- Si el usuario agradece, se despide o indica que no necesita más ayuda, respondé de manera cordial y breve.
+- Evitá respuestas excesivamente formales o robóticas.
+- No repitas innecesariamente información que ya fue proporcionada.
+
+Si la información necesaria para responder no está presente en el contexto, indicá que no encontraste información suficiente para responder.
+
 Contexto:
 ${contextText}
 `;
+
     try {
-        // Utiliza el modelo de OpenAI para generar la respuesta.
+        const input = [
+            ...history.map(message => ({
+                role: message.role,
+                content: message.content
+            })),
+            {
+                role: "user",
+                content: question.trim()
+            }
+        ];
+
         const response = await openai.responses.create({
             model: process.env.OPENAI_MODEL,
             instructions: systemPrompt,
-            input: question.trim()
+            input
         });
         return response.output_text;
+
     } catch (error) {
         console.error("OpenAI API error:", error);
         const apiError = new Error(

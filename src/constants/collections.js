@@ -1,3 +1,4 @@
+// Constantes para los nombres de las colecciones en la base de datos.
 export const COLLECTIONS = {
 
     USERS: "users",
@@ -8,6 +9,8 @@ export const COLLECTIONS = {
 
     CONVERSATIONS: "conversations",
 
-    CHATBOTS: "chatbots"    
+    CHATBOTS: "chatbots",
+
+    CONVERSATIONS: "conversations"
 
 };

@@ -1,3 +1,5 @@
+// Constantes para los tipos y estados de las fuentes de conocimiento.
+
 export const KNOWLEDGE_TYPES = {
 
     PDF: "pdf",

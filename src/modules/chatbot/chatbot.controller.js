@@ -74,7 +74,8 @@ export async function deleteChatbotSource(req, res) {
 export async function processChatMessageSource(req, res) {
     const result = await processChatMessage(
         req.params.id,
-        req.body.message
+        req.body.message,
+        req.body.sessionId
     );
     return res.status(200).json({
         success: true,
