@@ -7,24 +7,3 @@ uploads/knowledge/*.pdf
 # Variables de entorno
 .env
 
-# Archivos de logs
-*.log
-logs/
-
-# Archivos del sistema
-.DS_Store
-Thumbs.db
-
-# Configuración de VS Code
-.vscode/
-
-# Archivos temporales
-*.tmp
-*.temp
-
-# Cobertura de tests
-coverage/
-
-# Carpeta de uploads (solo conservar la carpeta)
-src/uploads/*
-!src/uploads/.gitkeep
