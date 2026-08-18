@@ -61,6 +61,7 @@ El proyecto implementa un flujo RAG (Retrieval-Augmented Generation): las fuente
   - [23.5. Cookie HttpOnly](#cookie-httponly)
   - [23.6. Umbral de relevancia](#umbral-de-relevancia)
 - [24. Flujo completo de uso](#flujo-completo-de-uso)
+- [25. Guía de pruebas con Postman](#guia-de-pruebas-con-postman)
 
 <a id="descripcion-del-proyecto"></a>
 ## 📌 1. Descripción del proyecto
