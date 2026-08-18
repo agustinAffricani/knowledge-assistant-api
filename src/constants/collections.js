@@ -5,10 +5,6 @@ export const COLLECTIONS = {
 
     KNOWLEDGE: "knowledge",
 
-    FAQS: "faqs",
-
-    CONVERSATIONS: "conversations",
-
     CHATBOTS: "chatbots",
 
     CONVERSATIONS: "conversations"
