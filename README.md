@@ -1349,3 +1349,332 @@ Un flujo típico de utilización es:
 ```
 
 ---
+
+<a id="guia-de-pruebas-con-postman"></a>
+
+## 🧪 25. Guía de pruebas con Postman
+
+La API puede probarse utilizando Postman.
+
+También se dispone de documentación interactiva mediante Swagger UI:
+
+```text
+http://localhost:3000/api-docs
+```
+
+Swagger permite consultar los endpoints, parámetros, cuerpos de petición, respuestas y códigos HTTP. La siguiente guía describe el orden recomendado para realizar una prueba completa de la aplicación.
+
+### 25.1. Registro
+
+Crear un usuario:
+
+```http
+POST /api/auth/register
+```
+
+Body:
+
+```json
+{
+  "name": "Usuario de prueba",
+  "email": "usuario@example.com",
+  "password": "Password123!",
+  "businessName": "Empresa de prueba"
+}
+```
+
+La respuesta devuelve los datos del usuario creado.
+
+### 25.2. Login
+
+Iniciar sesión:
+
+```http
+POST /api/auth/login
+```
+
+Body:
+
+```json
+{
+  "email": "usuario@example.com",
+  "password": "Password123!"
+}
+```
+
+El login genera un JWT y lo almacena en la cookie `authToken`.
+
+Las solicitudes posteriores a los endpoints protegidos deben realizarse utilizando la sesión autenticada.
+
+### 25.3. Perfil
+
+Consultar el perfil del usuario autenticado:
+
+```http
+GET /api/auth/profile
+```
+
+Permite comprobar que la autenticación mediante cookie está funcionando correctamente.
+
+### 25.4. Crear una fuente de conocimiento
+
+Crear una fuente:
+
+```http
+POST /api/knowledge
+```
+
+Ejemplo:
+
+```json
+{
+  "type": "text",
+  "title": "Información general",
+  "description": "Información general de la empresa"
+}
+```
+
+Los tipos disponibles son:
+
+```text
+text
+pdf
+url
+faq
+```
+
+La fuente se crea inicialmente con estado:
+
+```text
+pending
+```
+
+### 25.5. Cargar el contenido de la fuente
+
+El contenido se carga mediante:
+
+```http
+PATCH /api/knowledge/{id}/content
+```
+
+El `id` debe ser reemplazado por el ID de la fuente creada anteriormente.
+
+#### Fuente `text`
+
+```json
+{
+  "content": "La empresa atiende de lunes a viernes de 8 a 17 hs."
+}
+```
+
+#### Fuente `url`
+
+```json
+{
+  "url": "https://example.com"
+}
+```
+
+#### Fuente `faq`
+
+```json
+{
+  "question": "¿Cuál es el horario de atención?",
+  "answer": "Atendemos de lunes a viernes de 8 a 17 hs."
+}
+```
+
+#### Fuente `pdf`
+
+Para una fuente de tipo `pdf` se debe utilizar:
+
+```text
+multipart/form-data
+```
+
+con el campo:
+
+```text
+file
+```
+
+y seleccionar el archivo PDF a cargar.
+
+### 25.6. Verificar la fuente de conocimiento
+
+Consultar la fuente:
+
+```http
+GET /api/knowledge/{id}
+```
+
+Una vez que el procesamiento finalizó correctamente, su estado debe ser:
+
+```text
+ready
+```
+
+En ese momento la fuente está disponible para la recuperación semántica.
+
+### 25.7. Crear un chatbot
+
+Crear un chatbot:
+
+```http
+POST /api/chatbots
+```
+
+Ejemplo:
+
+```json
+{
+  "name": "Asistente de prueba",
+  "description": "Chatbot para pruebas",
+  "purpose": "Atención de consultas",
+  "isActive": true,
+  "knowledgeIds": []
+}
+```
+
+El chatbot puede crearse inicialmente sin fuentes asociadas.
+
+### 25.8. Asociar fuentes de conocimiento al chatbot
+
+Actualizar el chatbot:
+
+```http
+PATCH /api/chatbots/{id}
+```
+
+Ejemplo:
+
+```json
+{
+  "knowledgeIds": [
+    "ID_DE_KNOWLEDGE_1",
+    "ID_DE_KNOWLEDGE_2"
+  ]
+}
+```
+
+`knowledgeIds` representa la lista final de fuentes asociadas al chatbot.
+
+### 25.9. Consultar el chatbot público
+
+El endpoint público no requiere autenticación:
+
+```http
+POST /api/chatbots/{id}/chat
+```
+
+Primera consulta:
+
+```json
+{
+  "message": "¿Cuánto cuesta el Plan Pro?"
+}
+```
+
+La respuesta devuelve un `sessionId`.
+
+Ejemplo:
+
+```json
+{
+  "success": true,
+  "data": {
+    "answer": "El Plan Pro cuesta $50.000 mensuales.",
+    "sessionId": "85441acd-e683-4e7e-9413-4cfee84136dc"
+  }
+}
+```
+
+### 25.10. Probar el historial conversacional
+
+Para continuar la misma conversación se debe reutilizar el `sessionId` obtenido anteriormente:
+
+```json
+{
+  "sessionId": "85441acd-e683-4e7e-9413-4cfee84136dc",
+  "message": "¿Y qué incluye?"
+}
+```
+
+Esto permite comprobar que el chatbot utiliza el historial para interpretar preguntas de seguimiento.
+
+Por ejemplo:
+
+```text
+Pregunta 1:
+¿Cuánto cuesta el Plan Pro?
+
+Pregunta 2:
+¿Y qué incluye?
+```
+
+El chatbot debe interpretar que la segunda pregunta hace referencia al Plan Pro mencionado anteriormente.
+
+### 25.11. Probar una conversación natural
+
+También se puede comprobar el comportamiento conversacional utilizando una secuencia como:
+
+```text
+Hola, ¿cuánto cuesta el Plan Pro?
+
+¿Y qué incluye?
+
+Muchas gracias
+```
+
+Esto permite verificar:
+
+- saludo inicial;
+- utilización del historial;
+- comprensión de preguntas de seguimiento;
+- respuesta cordial ante un agradecimiento.
+
+### 25.12. Probar eliminación de recursos
+
+Una vez finalizadas las pruebas se pueden verificar los endpoints de eliminación:
+
+```http
+DELETE /api/knowledge/{id}
+```
+
+y:
+
+```http
+DELETE /api/chatbots/{id}
+```
+
+Las respuestas permiten comprobar que los recursos fueron eliminados correctamente.
+
+### 25.13. Orden recomendado
+
+Para realizar una prueba completa de extremo a extremo:
+
+```text
+Registro
+   ↓
+Login
+   ↓
+Crear Knowledge
+   ↓
+Cargar contenido
+   ↓
+Verificar status = ready
+   ↓
+Crear Chatbot
+   ↓
+Asociar Knowledge
+   ↓
+Consultar chatbot público
+   ↓
+Reutilizar sessionId
+   ↓
+Realizar pregunta de seguimiento
+   ↓
+Probar eliminación
+   ↓
+Logout
+```
