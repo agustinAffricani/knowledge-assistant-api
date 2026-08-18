@@ -1229,14 +1229,14 @@ La estructura principal del proyecto es:
 │   │   │   ├── chatbot.controller.js
 │   │   │   ├── chatbot.routes.js
 │   │   │   ├── chatbot.service.js
-│   │   │   └── ...
+│   │   │   └── chat.service.js
 │   │   │
 │   │   ├── knowledge/
 │   │   │   ├── knowledge.controller.js
 │   │   │   ├── knowledge.routes.js
 │   │   │   ├── knowledge.service.js
 │   │   │   ├── knowledge-search.service.js
-│   │   │   └── ...
+│   │   │   └── knowledge.processor.js
 │   │   │
 │   │   ├── conversation/
 │   │   │   └── conversation.service.js
