@@ -2,7 +2,7 @@
 node_modules/
 
 # Archivos de guardado
-uploads/
+uploads/knowledge/*.pdf
 
 # Variables de entorno
 .env
